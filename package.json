@@ -1,0 +1,63 @@
+{
+  "author": "",
+  "bugs": {},
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.4.2",
+    "bootstrap": "^5.3.1",
+    "ethers": "^6.7.1",
+    "mithril": "^2.2.2",
+    "qrcode-generator": "^1.4.4",
+    "tweetnacl": "^1.0.3"
+  },
+  "description": "",
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.3",
+    "mkdirp": "^1.0.4",
+    "mv": "^2.1.1",
+    "ncp": "^2.0.0",
+    "rollup": "^3.28.0"
+  },
+  "gxDependencies": [
+    {
+      "hash": "QmRv9fMJaXPUSGnw1KQqxEkZbi6oD8bZo2fwAcUL2S9Ujp",
+      "name": "libipfs",
+      "version": "1.1.1"
+    },
+    {
+      "hash": "QmaXonKufUmygQDgPAjEJWrSPgBXjcPVMne1wxNCZF7rj1",
+      "name": "libwip2p",
+      "version": "0.4.0"
+    },
+    {
+      "hash": "QmahmMdjSy1aiBnabznYvZCtvinTvEESDBwmV4nRtoz5ZG",
+      "name": "wip2p-settings",
+      "version": "0.3.16"
+    },
+    {
+      "hash": "QmaEazeuHZeTWdAXjvkBjH5z9AR7Dzpz7aRZSi3DWsfF1v",
+      "name": "ethereum-blockies",
+      "version": "1.0.3"
+    },
+    {
+      "hash": "QmVwqfnHEL11ZLFRmp5DGz4LdKqwxxUAVPis6ViWTc9ehz",
+      "name": "tweetnacl",
+      "version": "1.0.3"
+    }
+  ],
+  "gxVersion": "0.14.0",
+  "license": "ISC",
+  "main": "index.js",
+  "name": "wotch",
+  "scripts": {
+    "build": "node bundle.js",
+    "clean": "rimraf build",
+    "placeholder": "gx/libwip2p:../libwip2p/dist",
+    "publish": "ipfs add -r build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "web": "devserver -r src --b 0.0.0.0:7010",
+    "web-build": "devserver -b 0.0.0.0:7010 -r build --nogx",
+    "web-dev": "devserver -r src --b 0.0.0.0:7010 -include gx/wip2p-settings:../wip2p-settings"
+  },
+  "version": "0.0.4"
+}
+

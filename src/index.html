@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <link href="css/app.css" rel="stylesheet" type="text/css" />
+
+    <link rel="shortcut icon" type="image/png" href="assets/app_192_rounded.png"/>
+    <link rel="apple-touch-icon" type="image/png" href="assets/app_192_square.png"/>
+
+    <link href="manifest.json" rel="manifest">
+
+    <title>Wotch</title>
+  </head>
+<body class="bg-dark">
+
+<div id="app"></div>
+
+<div class="loader">
+    <img id="apploaderimg" src="" style="height:64px;width:64px;">
+    <div class="text-white">Loading... (<span id="assetCount">0</span> of <span id="assetTotal">..</span>)</div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+      </div>
+    </div>
+</div>
+
+<script type="importmap">
+  {
+    "imports": {
+      "ethers": "./npm/ethers/dist/ethers.min.js",
+      "tweetnacl": "./gx/tweetnacl/nacl-fast.esm.min.js",
+      "libipfs": "./gx/libipfs/libipfs.min.js",
+      "libwip2p": "./gx/libwip2p/libwip2p.min.js",
+      "wip2p-settings": "./gx/wip2p-settings/src/index.js",
+      "wip2p-settings/": "./gx/wip2p-settings/src/",
+      "ethereum-blockies": "./gx/ethereum-blockies/main.esm.min.js"
+    }
+  }
+</script>
+
+<script>
+
+  function isES6()
+  {
+    try
+    {
+        Function("() => {};"); return true;
+    }
+    catch(exception)
+    {
+        return false;
+    }
+  }
+
+  var addAsset = function(asset, callback) {    
+    if (asset.type == "css") {
+      var fileref = document.createElement("link");
+      fileref.rel = "stylesheet";
+      fileref.type = "text/css";
+      fileref.href = asset.path;
+      document.getElementsByTagName("head")[0].appendChild(fileref)
+      assetsLoaded++;
+      callback();
+    } else if (asset.type == "iife" || asset.type == 'iife-prefered') {
+      if (asset.type == 'iife-prefered' && (window.hasOwnProperty('iifePrefered') == false || window.iifePrefered == false)) {
+        return callback()
+      }
+      var fileref = document.createElement("script");
+      fileref.type = "text/javascript";
+      fileref.src = asset.path;
+      fileref.onload = function(loadEvent) {
+        assetsLoaded++;
+        callback();
+      }      
+      document.getElementsByTagName("body")[0].appendChild(fileref)
+    } else if (asset.type == "esm") {
+      if (window.iifePrefered != null && window.iifePrefered) {
+        return callback()
+      }
+      import(asset.path)
+      .then((mod)=>{
+        assetsLoaded++;
+        setTimeout(()=>callback(), 100);
+      })
+    } else {
+      throw new Error('unknown asset type')
+    }
+  }
+
+  var assets = [
+    {type:"css", path:"./npm/bootstrap/dist/css/bootstrap.min.css"},
+    {type:"css", path:"./npm/@fortawesome/fontawesome-free/css/fontawesome.min.css"},
+    {type:"css", path:"./npm/@fortawesome/fontawesome-free/css/solid.min.css"},
+
+    {type:"iife", path:"./npm/bootstrap/dist/js/bootstrap.bundle.min.js"},
+    {type:"iife", path:"./npm/mithril/mithril.min.js"},
+    {type:"iife", path:'./npm/qrcode-generator/qrcode.js'},
+
+    {type:"iife-prefered", path:"./npm/ethers/dist/ethers.umd.min.js"},
+    {type:"iife-prefered", path:"./gx/tweetnacl/nacl-fast.min.js"},
+    {type:"iife-prefered", path:"./gx/libipfs/libipfs.iife.min.js"},    
+    {type:"iife-prefered", path:"./gx/libwip2p/libwip2p.iife.min.js"},
+    {type:"iife-prefered", path:"./gx/ethereum-blockies/main.js"},
+    {type:"iife-prefered", path:"./gx/wip2p-settings/dist/wip2p-settings.iife.min.js"},
+
+    {type:"esm", path:"./npm/ethers/dist/ethers.min.js"},
+    {type:"esm", path:"./gx/tweetnacl/nacl-fast.esm.min.js"},
+    {type:"esm", path:"./gx/libipfs/libipfs.min.js"},
+    {type:"esm", path:"./gx/libwip2p/libwip2p.min.js"},
+    {type:"esm", path:"./gx/wip2p-settings/src/settings.js"},
+    {type:"esm", path:"./gx/ethereum-blockies/main.esm.min.js"}
+  ]
+
+  let assetCount = 0;
+  for (let a = 0; a < assets.length;a++){
+    if (assets[a].type == 'iife' || assets[a].type == 'css') {
+      assetCount++;
+    } else if (assets[a].type == 'iife-prefered' && window.iifePrefered != null && iifePrefered) {
+      assetCount++;
+    } else if (assets[a].type == 'esm' && (window.iifePrefered == null || !iifePrefered)) {
+      assetCount++;
+    }
+  }
+  document.getElementById('assetTotal').innerText = assetCount + 1;
+
+  let assetIndex = 0;
+  let assetsLoaded = 0;
+  var loaderimg = document.getElementById('apploaderimg');
+  loaderimg.onload = function(e) {
+    // load all css async
+    // load all js sync, order is important    
+    document.getElementById('assetCount').innerText = "1";
+
+    var onAssetsComplete = function() { 
+      import("./index.js")
+    }
+    var onLoadComplete = function() {  
+      assetIndex++;     
+      document.getElementById('assetCount').innerText = assetsLoaded + 1;
+      if (assetIndex < assets.length)
+          addAsset(assets[assetIndex], onLoadComplete);
+      else
+          onAssetsComplete();
+    }
+    addAsset(assets[assetIndex], onLoadComplete);
+  }
+
+  if (isES6()) {
+    loaderimg.src = "assets/app_192_rounded.png";
+  } else {
+    document.getElementsByTagName('body')[0].textContent = "Your browser does not support ES6. Try a modern browser such as Brave, Chrome, Firefox or DuckDuckGo.";
+  }
+
+</script>
+
+</body>
+</html>

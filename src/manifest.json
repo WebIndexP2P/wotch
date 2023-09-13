@@ -1,0 +1,18 @@
+{
+  "short_name": "Wotch",
+  "name": "Wotch",
+  "icons": [
+    {
+      "src": "assets/app_192_rounded.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "assets/app_512_rounded.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "display": "standalone"
+}
