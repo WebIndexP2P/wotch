@@ -2,7 +2,7 @@ import * as MithrilNav from './lib/mithrilnav.js'
 import Version from './lib/version.js'
 import PublicCheck from './lib/publiccheck.js'
 import PageLayout from './components/layout/pagelayout.js'
-import PageUnified from './components/unifiedview.js'
+import PageAllVideos from './components/allvideos.js'
 import PageChannel from './components/channel.js'
 import PageSearch from './components/search.js'
 import {SettingsVnode as PageSettings} from 'wip2p-settings'
@@ -12,6 +12,7 @@ import AppState from './lib/appstate.js'
 import ModalManager from './lib/modalmanager.js'
 import AlphaWarningModal from './components/alphawarning.js'
 import PageAdmin from './components/admin.js'
+import WotchSettings from './components/wotchsettings.js'
 
 import * as libwip2p from 'libwip2p'
 
@@ -35,6 +36,11 @@ else
 window.preferedIpfsGateway = localStorage.getItem("preferedIpfsGateway")
 if (window.preferedIpfsGateway == null || window.preferedIpfsGateway == "") {
   window.preferedIpfsGateway = "https://ipfs.io/ipfs/"
+}
+
+let tmpWotchSearchEndpoint = localStorage.getItem("wotchsearchEndpoint")
+if (tmpWotchSearchEndpoint != null && tmpWotchSearchEndpoint != "") {
+  AppState.getAppVariables().wotchsearch_endpoint = tmpWotchSearchEndpoint
 }
 
 libwip2p.useLocalStorage(true);
@@ -99,26 +105,22 @@ libwip2p.Peers.init(null, libwip2p.Account.getWallet)
     version: "v" + Version,
     description: m("span", " is a p2p video indexing platform. Index videos from multiple platforms for one unified feed. All data is stored in ", m("a[href='https://wip2p.com']", {target:"_blank"}, "WebIndexP2P"), " nodes run by volunteers."),
     icon:"assets/app_192_rounded.png",
-    _additionalTabs: [],
+    additionalTabs: [{key:"wotch", name:"Wotch", vnode: WotchSettings}],
     theme: "dark"
   }
 
   m.route(a, "/", {
     "/": {render: function() {
-      return m(PageLayout, {}, m(PageUnified))
-    }},
-    "/unified/:page": {render: function() {
-      return m(PageLayout, {}, m(PageUnified, {key: m.route.param().page}))
+      return m(PageLayout, {}, m(PageAllVideos))
     }},
     "/channel/:address": {render: function() {
       return m(PageLayout, {}, m(PageChannel, {key: m.route.param().address}))
     }},
-    "/channel/:address/:page": {render: function() {
-      let tmpKey = m.route.param().address + "_" + m.route.param().page
-      return m(PageLayout, {}, m(PageChannel, {key: tmpKey}))
-    }},
     "/search": {render: function() {
       return m(PageLayout, {}, m(PageSearch))
+    }},
+    "/search/:q": {render: function() {
+      return m(PageLayout, {}, m(PageSearch, {key: m.route.param().q}))
     }},
     "/admin": {render: function() {
       return m(PageLayout, {}, m(PageAdmin))

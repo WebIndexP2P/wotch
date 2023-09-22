@@ -9,6 +9,8 @@ export default {
       vnode.state.prevLabel = m("i.fa fa-arrow-left")
       vnode.state.nextLabel = m("i.fa fa-arrow-right")
     }
+
+    Object.seal(vnode.state)
   },
   /*onupdate:(vnode)=>{
     console.log(vnode.attrs)
@@ -19,7 +21,12 @@ export default {
     }
     return m("nav",
       m("ul.pagination",
-        m("li.page-item " + ((vnode.attrs.page==1)?"disabled":""), m(m.route.Link, {href:vnode.attrs.url+"/" + (vnode.attrs.page - 1), selector:"a.page-link"}, vnode.state.prevLabel)),
+        m("li.page-item " + ((vnode.attrs.page==1)?"disabled":""), m("a.page-link", {href:"#", onclick:()=>{
+          if (typeof vnode.attrs.onPageNavigate == 'function') {
+            vnode.attrs.onPageNavigate(vnode.attrs.page - 1)
+          }
+          return false
+        }}, vnode.state.prevLabel)),
         (function(){
           let pageLinks = [];
           let startPage = vnode.attrs.page - (vnode.state.numPageLinksToShow + 1)
@@ -46,7 +53,12 @@ export default {
             if (a + 1 == vnode.attrs.page) {
               active = "active"
             }
-            pageLinks.push(m("li.page-item " + active, m(m.route.Link, {href:vnode.attrs.url+"/" + (a + 1), selector:"a.page-link"}, a + 1)))
+            pageLinks.push(m("li.page-item " + active, m("a.page-link", {href:"#", onclick:()=>{
+              if (typeof vnode.attrs.onPageNavigate == 'function') {
+                vnode.attrs.onPageNavigate(a + 1)
+              }
+              return false
+            }}, a + 1)))
           }
 
           if (isEndGap || vnode.attrs.hasUnscanned) {
@@ -55,7 +67,12 @@ export default {
 
           return pageLinks;
         })(),            
-        m("li.page-item " + ((vnode.attrs.page==vnode.attrs.pageCount)?"disabled":""), m(m.route.Link, {href:vnode.attrs.url+"/" + (vnode.attrs.page + 1), selector:"a.page-link"}, vnode.state.nextLabel))
+        m("li.page-item " + ((vnode.attrs.page==vnode.attrs.pageCount&&vnode.attrs.hasUnscanned==false)?"disabled":""), m("a.page-link", {href:"#", onclick:()=>{
+          if (typeof vnode.attrs.onPageNavigate == 'function') {
+            vnode.attrs.onPageNavigate(vnode.attrs.page + 1)
+          }
+          return false
+        }}, vnode.state.nextLabel))
       )
     )
   }

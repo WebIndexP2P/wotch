@@ -4,7 +4,9 @@ import CachedVideo from './cachedvideo.js'
 let Buffer = libipfs.buffer.Buffer
 
 var appVariables = {
-  "suggested_channels_alias": "wotch_suggestions"
+  "suggested_channels_alias": "wotch_suggestions",
+  "wotchsearch_endpoint": "https://ws.wip2p.com",
+  "wotchsearch_enabled": true
 }
 
 var addressStats = {} // { address: videosByTimestamp, maxId, lastLoadedId, playlistRootCid, indexDepth, loadStatus, suggestedGateways, useFallback }
@@ -12,6 +14,8 @@ var videosByTimestamp = []
 var loadErrorCids = {} // {cid: true}
 var events = new libwip2p.CustomEventEmitter()
 var suggestedChannels = null
+var localSearchResults = []
+var localSearchString = ""
 
 var process = async function(address, db, linkedSet) {
 
@@ -523,6 +527,8 @@ var hasUnscannedVideosForChannel = function(address) {
   }
   if (addressStats[address].lastLoadedId != 0) {
     return true
+  } else {
+    return false
   }
 }
 
@@ -577,6 +583,58 @@ var retryInitialFetch = async function(address) {
   })
 }
 
+var getEstimatedVideoCount = function() {
+  let count = 0
+  for (let prop in addressStats) {
+    count += addressStats[prop].maxId + 1 
+  }
+  return count
+}
+
+var updateSuggestedGatewaysForAddress = function(address, suggestedGateways) {
+  if (addressStats.hasOwnProperty(address) == false) {
+    addressStats[address] = {suggestedGateways: suggestedGateways}
+  } else {
+    addressStats[address].suggestedGateways = suggestedGateways
+  }
+}
+
+var getAddressStatsForAddress = function(address) {
+  return addressStats[address]
+}
+
+var localSearch = function(searchString, startPage, numRowsPerPage) {
+  if (searchString != localSearchString) {    
+    doSearch(searchString)
+  }
+
+  let tmpStartPage = startPage - 1
+  let startIdx = tmpStartPage * numRowsPerPage
+
+  return {
+    videos: localSearchResults.slice(startIdx, startIdx + numRowsPerPage),
+    resultCount: localSearchResults.length
+  }
+}
+
+var doSearch = function(searchString) {
+  localSearchResults = []
+  searchString = searchString.toLowerCase()
+
+  for (let address in addressStats) {
+    for (let a = 0; a < addressStats[address].videosByTimestamp.length; a++) {      
+      let tmpVideo = addressStats[address].videosByTimestamp[a]
+      if (tmpVideo.title.toLowerCase().indexOf(searchString) >= 0) {
+        localSearchResults.push(tmpVideo)
+      }
+    }
+  }
+
+  localSearchResults.sort((a, b)=>b.timestamp - a.timestamp)
+
+  return localSearchResults
+}
+
 export default {
   process,
   getAppVariables,
@@ -593,5 +651,9 @@ export default {
   getSuggestedChannels,
   getGatewayForAddress,
   getAddressStatus,
-  retryInitialFetch
+  retryInitialFetch,
+  getEstimatedVideoCount,
+  updateSuggestedGatewaysForAddress,
+  getAddressStatsForAddress,
+  localSearch
 }

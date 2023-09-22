@@ -1,95 +1,55 @@
-import MakeBlockies from 'ethereum-blockies'
-import AppState from '../lib/appstate.js'
+import Suggestions from './suggestions.js'
+import PaginatedGrid from './paginatedgrid.js'
 import { ethers } from 'ethers'
-import * as libwip2p from 'libwip2p'
 
 var doSearch = function(vnode){
-  vnode.state.searchError = null
+  
+  let searchString = vnode.state.draftSearchString
 
-  let searchString = document.getElementById("searchText").value
   if (ethers.isAddress(searchString)) {
     m.route.set("/channel/" + searchString)
-  } else {
-    vnode.state.searchError = m("div.invalid-feedback", {style:"display:inline-block;"}, "invalid address")
+    return
   }
-}
 
-var addToSearchIndex = function(address) {
-  libwip2p.Loader.fetchOne(address)
-  .then(()=>{
-    m.redraw()
-  })
-}
-
-var retryIpfsFetch = function(address) {
-  AppState.retryInitialFetch(address)
-  .then(()=>{
-    m.redraw()
-  })
+  m.route.set("/search/:q", {q: searchString})
 }
 
 export default{
-  oninit: (vnode)=>{
-    vnode.state.searchError = null
-    vnode.state.suggestedAddresses = []
-    vnode.state.appStateEventListener = null    
-
+  oninit: (vnode)=>{    
+    vnode.state.draftSearchString = ""
+    vnode.state.searchBegun = false
+    vnode.state.searchString = m.route.param().q
+    if (vnode.state.searchString != null) {
+      vnode.state.draftSearchString = vnode.state.searchString
+      vnode.state.searchBegun = true
+    }
     Object.seal(vnode.state)
-
-    vnode.state.appStateEventListener = AppState.onUpdate(()=>{
-      AppState.getSuggestedChannels()
-      .then((channels)=>{
-        vnode.state.suggestedAddresses = channels
-        m.redraw()
-      })
-    })
-
-    AppState.getSuggestedChannels()
-    .then((channels)=>{
-      vnode.state.suggestedAddresses = channels
-      m.redraw()
-    })
-  },
-  onremove: (vnode)=>{
-    AppState.removeOnUpdate(vnode.state.appStateEventListener)
+    
   },
   view: (vnode)=>{
     return m("div.container text-white",
-      m("div.row",
+      m("div.row mb-3",
         m("div.col-12",
           m("div.input-group",
-            m("input.form-control", {type:"text", id:"searchText", placeholder:"address", style:"max-width:400px;"}),
+            m("input.form-control", {type:"text", id:"searchText", style:"max-width:400px;", value: vnode.state.draftSearchString, onkeyup:(e)=>{
+              vnode.state.draftSearchString = e.target.value
+              if (e.keyCode === 13) {
+                doSearch(vnode)
+              }
+            }}),
             m("button.btn btn-primary", {onclick: doSearch.bind(null, vnode)}, "Search")
           ),
           vnode.state.searchError
         )
       ),
-      m("div.row mt-4",
-        m("div.col-12",
-          m("p", "Or try these suggestions:"),
-          m("div.row",
-            vnode.state.suggestedAddresses.map((address)=>{
-              let addToIndexBtn = m("button.btn btn-outline-secondary btn-sm", {onclick: addToSearchIndex.bind(null, address)}, m("i.fa fa-search"), " Add to search index")
-              if (AppState.hasAddress(address)) {
-                addToIndexBtn = null
-              }
-              if (AppState.getAddressStatus(address) == 'failed') {
-                addToIndexBtn = m("div", m("button.btn btn-outline-danger btn-sm", {onclick: retryIpfsFetch.bind(null, address)}, m("i.fa fa-refresh"), " Failed, Click to retry"))
-              }
-              return m("div.col-3 col-sm-2",
-                m("div.mb-2",
-                  m("div", {style:"text-align:center;"}, m("img", {src: MakeBlockies(address), style:"height:48px;width:48px;border-radius:50%;"})),
-                  m("div.text-white", {style:"font-size:12px;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;"}, address),
-                  m("div",
-                    m("button.btn btn-outline-secondary btn-sm mb-2", {onclick:()=>m.route.set("/channel/" + address)}, m("i.fa fa-user"), " View channel"),
-                    addToIndexBtn
-                  )
-                )
-              )
-            })
-          )
-        )
-      )
+      (()=>{
+        if (!vnode.state.searchBegun) {
+          return m(Suggestions)
+        } else {
+          return [ m(PaginatedGrid, {key: vnode.state.searchString, searchString: vnode.state.searchString}) ]
+        }
+      })()
+      
     )
   }
 }

@@ -165,8 +165,13 @@ export default {
             m("button.btn btn-primary", {onclick: verifyIpfsPlaylist.bind(null, vnode)}, m("i.fa fa-circle-check"), " Verify")
           )
         ),
-        m("div.text-danger", vnode.state.importError),
-        m("div.text-success", vnode.state.fetchingStatus)
+        (()=>{
+          if (vnode.state.importError) {
+            return m("div.text-danger", vnode.state.importError)
+          } else {
+            return m("div.text-success", vnode.state.fetchingStatus)
+          }
+        })()
       ),
       m("div.row mt-3",
         m("div.col-md-7 col-lg-6 col-xl-5 col-xxl-4",
