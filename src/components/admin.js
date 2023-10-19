@@ -11,22 +11,31 @@ var verifyIpfsPlaylist = async function(vnode, e) {
   vnode.state.fetchingStatus = null
 
   let cid
-  try {
-    cid = CID.parse(vnode.state.newRootCid)
-  } catch (err) {
-    console.error(err)
-    vnode.state.importError = "Cid appears invalid"
-    return
+  if (vnode.state.newRootCid == "") {
+    vnode.state.fetchingStatus = "Playlist to be removed"
+    vnode.state.saveState = ""
+  } else {    
+    try {
+      cid = CID.parse(vnode.state.newRootCid)
+    } catch (err) {
+      console.error(err)
+      vnode.state.importError = "Cid appears invalid"
+      return
+    }
+
+    let maxVideoId = await getVideoCount(vnode, cid)
+    let videoCount = parseInt(maxVideoId) + 1
+    vnode.state.fetchingStatus = "Found " + videoCount + " videos"  
   }
 
-  let maxVideoId = await getVideoCount(vnode, cid)
-  let videoCount = parseInt(maxVideoId) + 1
-  vnode.state.fetchingStatus = "Found " + videoCount + " videos"
   vnode.state.saveState = ""
   m.redraw()
 }
 
 var getVideoCount = function(vnode, cid) {
+  if (cid == null) {
+    return
+  }
   vnode.state.fetchingStatus = m("span", m("b", "Fetching: "), cid.toString())
   m.redraw()
 
@@ -101,6 +110,10 @@ var save = function(vnode, e) {
       vnode.state.saveResult = JSON.stringify(response)
     }
     m.redraw()
+    libwip2p.Loader.fetchOne(myAddress, {replaceCache: true})
+    .then(()=>{
+      m.redraw()
+    })
   })
   .catch((err)=>{
     vnode.state.saveResult = err.message
@@ -160,6 +173,8 @@ export default {
           m("label", "IPFS playlist CID"),
           m("div.input-group",
             m("input.form-control", {id:"playlistCid", type:"text", placeholder:"playlist CID", oninput: ()=>{}, value: vnode.state.newRootCid, oninput:(e)=>{
+              vnode.state.fetchingStatus = ""
+              vnode.state.saveResult = ""
               vnode.state.newRootCid = e.target.value
             }}),
             m("button.btn btn-primary", {onclick: verifyIpfsPlaylist.bind(null, vnode)}, m("i.fa fa-circle-check"), " Verify")

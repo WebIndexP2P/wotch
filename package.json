@@ -58,6 +58,6 @@
     "web-build": "devserver -b 0.0.0.0:7010 -r build --nogx",
     "web-dev": "devserver -r src --b 0.0.0.0:7010 -include gx/wip2p-settings:../wip2p-settings"
   },
-  "version": "0.0.5"
+  "version": "0.0.6"
 }
 

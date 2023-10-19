@@ -19,6 +19,8 @@ var localSearchString = ""
 
 var process = async function(address, db, linkedSet) {
 
+  console.log('AppState -> process()')
+
   address = address.toLowerCase()
 
   // remove all existing videos for this address
@@ -31,7 +33,7 @@ var process = async function(address, db, linkedSet) {
   videosByTimestamp = newVideoArray
   newVideoArray = null
 
-  console.log('AppState -> process()')
+  
   let wotchRoot = await linkedSet.getContentByPath("/wotch", {useCidFetcher: true})  
   if (wotchRoot != null && wotchRoot.playlist_ipfs != null) {
     let playlistRootCid = wotchRoot.playlist_ipfs
@@ -196,10 +198,12 @@ var getVideosForAddressPaginated = async function(page, numPerPage, address) {
       startIndex = startIndex.padStart(tmpAddressStats.indexDepth, "0")
     }
     let tmpVideos = await fetchPartialVideos(tmpAddressStats.playlistRootCid, startIndex, null, targetGateway)
-    .catch((err)=>{
-      console.log('error detected')
-      addressStats[address].loadStatus = 'failed'
-      addressStats[address].useFallback = true
+    .catch((err)=>{            
+      if (err.message != "cid cannot be empty") {
+        console.log('ipfs fetch failed')
+        addressStats[address].loadStatus = 'failed'
+        addressStats[address].useFallback = true        
+      }
     })
     if (tmpVideos == null || tmpVideos.length == 0) {
       console.log('breaking')
@@ -250,6 +254,11 @@ var fetchPartialVideos = async function(cid, startFrom, indexPrefix, ipfsGateway
   if (cid == null) {
     throw new Error("cid cannot be null")
   }
+
+  if (cid == "") {
+    throw new Error("cid cannot be empty")
+  }
+
   if (ipfsGateway == null) {
     throw new Error("ipfsGateway cannot be null")
   }
@@ -561,7 +570,7 @@ var getGatewayForAddress = function(address) {
     if (addressStats[address].useFallback) { 
       return window.preferedIpfsGateway
     }
-    if (addressStats[address].hasOwnProperty('suggestedGateways') && addressStats[address].suggestedGateways.length > 0) {
+    if (addressStats[address].hasOwnProperty('suggestedGateways') && Array.isArray(addressStats[address].suggestedGateways) && addressStats[address].suggestedGateways.length > 0) {
       return addressStats[address].suggestedGateways[0]
     }
     return window.preferedIpfsGateway

@@ -12,9 +12,6 @@ export default {
 
     Object.seal(vnode.state)
   },
-  /*onupdate:(vnode)=>{
-    console.log(vnode.attrs)
-  },*/
   view: (vnode)=>{
     if (vnode.attrs.pageCount == 0) {
       return null
@@ -53,10 +50,13 @@ export default {
             if (a + 1 == vnode.attrs.page) {
               active = "active"
             }
-            pageLinks.push(m("li.page-item " + active, m("a.page-link", {href:"#", onclick:()=>{
+            pageLinks.push(m("li.page-item " + active, m("a.page-link", {href:"#", onclick:(e)=>{
               if (typeof vnode.attrs.onPageNavigate == 'function') {
                 vnode.attrs.onPageNavigate(a + 1)
               }
+              setTimeout(()=>{
+                e.target.blur()
+              }, 200)              
               return false
             }}, a + 1)))
           }

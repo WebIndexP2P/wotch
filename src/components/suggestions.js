@@ -31,7 +31,8 @@ export default {
               addToIndexBtn = null
             }
             if (AppState.getAddressStatus(address) == 'failed') {
-              addToIndexBtn = m("div", m("button.btn btn-outline-danger btn-sm", {onclick: retryIpfsFetch.bind(null, address)}, m("i.fa fa-refresh"), " Failed, Click to retry"))
+              //addToIndexBtn = m("div", m("button.btn btn-outline-danger btn-sm", {onclick: retryIpfsFetch.bind(null, address)}, m("i.fa fa-refresh"), " Failed, Click to retry"))
+              addToIndexBtn = m("div", m("button.btn btn-outline-danger btn-sm", {onclick: ()=>{}}, m("i.fa fa-refresh"), " Failed, Click to retry"))
             }
             return m("div.col-3 col-sm-2",
               m("div.mb-2",

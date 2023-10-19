@@ -90,7 +90,7 @@ libwip2p.Peers.init(null, libwip2p.Account.getWallet)
     .then((ps)=>{
       ps.onBundleReceived = function(bundle){
         console.log('bundle received from ' + bundle.account)
-        //libwip2p.Loader.fetchOne(bundle.account, {replaceCache: true});
+        libwip2p.Loader.fetchOne(bundle.account, {replaceCache: true});
       }
     })
   })
