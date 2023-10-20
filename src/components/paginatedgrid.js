@@ -138,7 +138,7 @@ export default {
       m(Pagination, {url:"/unified", page: vnode.state.page, pageCount: vnode.state.pageCount, hasUnscanned: vnode.state.hasUnscanned, onPageNavigate: onPageNavigate.bind(null, vnode)}),
       m("div.row",
         vnode.state.pageResults.map((video)=>{
-          return m(VideoThumb, {video: video, did: vnode.state.did})
+          return m(VideoThumb, {video: video})
         })
       ),
       m(Pagination, {url:"/unified", page: vnode.state.page, pageCount: vnode.state.pageCount, hasUnscanned: vnode.state.hasUnscanned, onPageNavigate: onPageNavigate.bind(null, vnode)})

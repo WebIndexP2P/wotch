@@ -24,14 +24,14 @@
       "version": "1.1.1"
     },
     {
-      "hash": "QmaXonKufUmygQDgPAjEJWrSPgBXjcPVMne1wxNCZF7rj1",
+      "hash": "QmWjWtHqKUdKz7bcigQXK8hd4wkJDwq6LhcU3HmM2qa5kT",
       "name": "libwip2p",
-      "version": "0.4.0"
+      "version": "0.4.2"
     },
     {
-      "hash": "QmahmMdjSy1aiBnabznYvZCtvinTvEESDBwmV4nRtoz5ZG",
+      "hash": "QmfFDLNrtxaXX3PyiY7KACugUiyZhLinAk5UCF2YybdNeA",
       "name": "wip2p-settings",
-      "version": "0.3.16"
+      "version": "0.3.18"
     },
     {
       "hash": "QmaEazeuHZeTWdAXjvkBjH5z9AR7Dzpz7aRZSi3DWsfF1v",
@@ -51,13 +51,13 @@
   "scripts": {
     "build": "node bundle.js",
     "clean": "rimraf build",
-    "placeholder": "gx/libwip2p:../libwip2p/dist",
+    "placeholder": "gx/libwip2p:../libwip2p/dist,gx/wip2p-settings:../wip2p-settings",
     "publish": "ipfs add -r build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "web": "devserver -r src --b 0.0.0.0:7010",
     "web-build": "devserver -b 0.0.0.0:7010 -r build --nogx",
-    "web-dev": "devserver -r src --b 0.0.0.0:7010 -include gx/wip2p-settings:../wip2p-settings"
+    "web-dev": "devserver -r src --b 0.0.0.0:7010 -include gx/libwip2p:../libwip2p/dist"
   },
-  "version": "0.0.6"
+  "version": "0.0.7"
 }
 
