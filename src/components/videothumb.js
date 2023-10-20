@@ -37,7 +37,8 @@ export default {
       // ensure we have a connection
       if (libwip2p.Peers.getConnState() != 4) {
         // subscribe to connection event
-        libwip2p.Peers.events.on("connstatechange", function(state){
+        libwip2p.Peers.events.on("connstatechange", function(data){
+          let state = data[0];
           if (state == 4) {
             resolve();
           }
