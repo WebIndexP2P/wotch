@@ -58,6 +58,6 @@
     "web-build": "devserver -b 0.0.0.0:7010 -r build --nogx",
     "web-dev": "devserver -r src --b 0.0.0.0:7010 -include gx/libwip2p:../libwip2p/dist"
   },
-  "version": "0.0.7"
+  "version": "0.0.8"
 }
 

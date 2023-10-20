@@ -28,14 +28,38 @@ var popupPlay = function(vnode, videoUrl, e) {
 export default {
   oninit: (vnode)=>{
     vnode.state.did = null
+    vnode.state.didPromiseControls = null
 
-    libwip2p.DIDLoader.loadBatch([vnode.attrs.video.owner])
+    Object.seal(vnode.state)
+
+    new Promise((resolve, reject)=>{
+      vnode.state.didPromiseControls = {resolve, reject}
+      // ensure we have a connection
+      if (libwip2p.Peers.getConnState() != 4) {
+        // subscribe to connection event
+        libwip2p.Peers.events.on("connstatechange", function(state){
+          if (state == 4) {
+            resolve();
+          }
+        })
+        // maybe a timeout??
+      } else {
+        resolve();
+      }
+    })
+    .then(()=>{
+      return libwip2p.DIDLoader.loadBatch([vnode.attrs.video.owner])      
+    })
     .then(()=>{
       vnode.state.did = libwip2p.DIDLoader.get(vnode.attrs.video.owner)
       m.redraw()
     })
-
-    Object.seal(vnode.state)
+    .catch((err)=>{
+      //console.log(err)
+    })
+  },
+  onremove: (vnode)=>{
+    vnode.state.didPromiseControls.reject('cancelled')
   },
   view: (vnode)=>{
 
